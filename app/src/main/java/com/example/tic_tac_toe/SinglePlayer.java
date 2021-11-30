@@ -56,7 +56,7 @@ public class SinglePlayer extends AppCompatActivity {
         nine.setOnClickListener(listener);
 
         backBtn = findViewById(R.id.back_btn);
-        drawBtn = findViewById(R.id.draw_btn);
+        drawBtn = findViewById(R.id.rematch_btn);
 
         backBtn.setOnClickListener(v -> {
             AlertDialog dialog = new AlertDialog.Builder(this).create();
