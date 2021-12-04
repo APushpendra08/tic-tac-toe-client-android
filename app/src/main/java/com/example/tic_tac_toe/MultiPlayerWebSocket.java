@@ -28,148 +28,166 @@ public class MultiPlayerWebSocket extends AppCompatActivity {
     int player, chance, in = 1;
     OkHttpClient okHttpClient = null;
     WebSocket webSocket = null;
-    private String SERVER_HOST = "ws://192.168.0.109:3000";
+    private String SERVER_HOST = "ws://192.168.0.109";
     private String SERVER_PORT = "3000";
     private String GAME_ID;
+    private int PlayerId = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_single_player);
         setViews();
-        player = getIntent().getIntExtra("player", 0);
         chance = 0;
         initiateSocketConnection();
         grid = new int[][]{{-1,-1,-1},{-1,-1,-1},{-1,-1,-1}};
+
+        Button btn = findViewById(R.id.rematch_btn);
+        btn.setOnClickListener(v -> {
+            Toast.makeText(this, PlayerId + "" , Toast.LENGTH_SHORT).show();
+        });
     }
 
     private void initiateSocketConnection() {
-        Log.d("Running", "Starting");
         okHttpClient = new OkHttpClient();
         Request request = new Request.Builder()
-                .url(SERVER_PATH)
+                .url(SERVER_HOST + ":" + SERVER_PORT)
                 .build();
-        Log.d("Running", "Req created");
         webSocket = okHttpClient.newWebSocket(request, new SocketListener());
-        webSocket.send("Is this even working");
-        Log.d("Running", "Now should work");
-
     }
 
     private class SocketListener extends WebSocketListener{
         @Override
         public void onMessage(@NonNull WebSocket webSocket, @NonNull String text) {
             super.onMessage(webSocket, text);
-            // Called when we recieve any message in form of string
-            runOnUiThread(()->{
-                if(text.equals("Is this even working"))
-                    return;
-                String[] sep = text.split(",");
-                in = Integer.parseInt(sep[2]);
-//                player = Integer.parseInt(sep[2]);
-                switch (sep[0]){
-                    case "0":
-                        switch (sep[1]){
-                            case "0": one.performClick();
-                                break;
-                            case "1": two.performClick();
-                                break;
-                            case "2": three.performClick();
-                                break;
-                        }
-                        break;
-                    case "1":
-                        switch (sep[1]){
-                            case "0": four.performClick();
-                                break;
-                            case "1": five.performClick();
-                                break;
-                            case "2": six.performClick();
-                                break;
-                        }
-                        break;
-                    case "2":
-                        switch (sep[1]){
-                            case "0": seven.performClick();
-                                break;
-                            case "1": eight.performClick();
-                                break;
-                            case "2": nine.performClick();
-                                break;
-                        }
-                        break;
-                }
+            String[] textParts = text.split(",");
+            if(textParts[0].equals("PlayerId")) {
+                PlayerId = Integer.parseInt(textParts[1]);
+                runOnUiThread(() -> {
+                    Toast.makeText(MultiPlayerWebSocket.this, textParts[1], Toast.LENGTH_SHORT).show();
+                });
+            } else {
+                String x = textParts[0], y = textParts[1], whoMadeMove = textParts[2], whosNext = textParts[3];
 
-                in = 1;
+                runOnUiThread(() -> {
+                    switch (x) {
+                        case "0":
+                            switch (y) {
+                                case "0":
+                                    setView(one);
+                                    break;
+                                case "1":
+                                    setView(two);
+//                                    two.setOnClickListener(null);
+                                    break;
+                                case "2":
+                                    setView(three);
+//                                    three.setOnClickListener(null);
+                                    break;
+                            }
+                            break;
+                        case "1":
+                            switch (y) {
+                                case "0":
+                                    setView(four);
+//                                    four.setOnClickListener(null);
+                                    break;
+                                case "1":
+                                    setView(five);
+//                                    five.setOnClickListener(null);
+                                    break;
+                                case "2":
+                                    setView(six);
+//                                    six.setOnClickListener(null);
+                                    break;
+                            }
+                            break;
+                        case "2":
+                            switch (y) {
+                                case "0":
+                                    setView(seven);
+//                                    seven.setOnClickListener(null);
+                                    break;
+                                case "1":
+                                    setView(eight);
+//                                    eight.setOnClickListener(null);
+                                    break;
+                                case "2":
+                                    setView(nine);
+//                                    nine.setOnClickListener(null);
+                                    break;
+                            }
+                            break;
+                    }
+                    setValue(Integer.parseInt(x), Integer.parseInt(y), Integer.parseInt(whoMadeMove), Integer.parseInt(whosNext));
+                    Toast.makeText(MultiPlayerWebSocket.this, whoMadeMove + " : " + whosNext, Toast.LENGTH_SHORT).show();
 
-                Toast.makeText(MultiPlayerWebSocket.this, text, Toast.LENGTH_SHORT).show();
-            });
+                    int winner = MultiPlayer.winner(grid);
+
+                    if(winner > 0) {
+                        Toast.makeText(MultiPlayerWebSocket.this, "Winner is Player " + winner, Toast.LENGTH_SHORT).show();
+                        Log.d("Winner", winner + "");
+
+                        breakAllTouchs();
+                    } else if( winner == -1){
+                        Toast.makeText(MultiPlayerWebSocket.this, "Draw", Toast.LENGTH_SHORT).show();
+
+                    }
+                });
+            }
         }
 
         @Override
         public void onOpen(@NonNull WebSocket webSocket, @NonNull Response response) {
 //            super.onOpen(webSocket, response);
-            // Called when Client connects with the server
-            webSocket.send("isPlayer");
-
+            webSocket.send("isSecondConnect");
             runOnUiThread(()->{
-                Log.d("Running", "Running");
                 Toast.makeText(MultiPlayerWebSocket.this, "Socket Connected", Toast.LENGTH_SHORT).show();
 //                setViews();
-
             });
         }
+    }
+
+    private void setView(ImageView view) {
+        if(chance % 2 == 0)
+            ((ImageView)view).setImageResource(R.drawable.cross);
+        else
+            ((ImageView)view).setImageResource(R.drawable.circle);
+
+        view.setOnClickListener(null);
+    }
+
+    private void setValue(int x, int y, int whoMade, int whosNext) {
+        grid[x][y] = whoMade;
+        chance = whosNext;
     }
 
     View.OnClickListener listener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
 
-            Toast.makeText(MultiPlayerWebSocket.this, view.getId() + "", Toast.LENGTH_SHORT).show();
-
-            if(in == 0)
-                return ;
-
-            view.setOnClickListener(null);
-            if(chance % 2 == 0)
-                ((ImageView)view).setImageResource(R.drawable.cross);
-            else
-                ((ImageView)view).setImageResource(R.drawable.circle);
-            chance++;
-
-//            webSocket.send("ABC");
+            if(chance != PlayerId)
+                return;
 
             switch (view.getId()){
-                case R.id.one: webSocket.send("0,0," + player%2);
+                case R.id.one: webSocket.send("0,0," + chance + "," +(chance+1)%2);
                     break;
-                case R.id.two: webSocket.send("0,1," + player%2);
+                case R.id.two: webSocket.send("0,1," + chance + "," +(chance+1)%2);
                     break;
-                case R.id.three: webSocket.send("0,2," + player%2);
+                case R.id.three: webSocket.send("0,2," + chance + "," +(chance+1)%2);
                     break;
-                case R.id.four: webSocket.send("1,0," + player%2);
+                case R.id.four: webSocket.send("1,0," + chance + "," +(chance+1)%2);
                     break;
-                case R.id.five: webSocket.send("1,1," + player%2);
+                case R.id.five: webSocket.send("1,1," + chance + "," +(chance+1)%2);
                     break;
-                case R.id.six: webSocket.send("1,2," + player%2);
+                case R.id.six: webSocket.send("1,2," + chance + "," +(chance+1)%2);
                     break;
-                case R.id.seven: webSocket.send("2,0," + player%2);
+                case R.id.seven: webSocket.send("2,0," + chance + "," +(chance+1)%2);
                     break;
-                case R.id.eight: webSocket.send("2,1," + player%2);
+                case R.id.eight: webSocket.send("2,1," + chance + "," +(chance+1)%2);
                     break;
-                case R.id.nine: webSocket.send("2,2," + player%2);
+                case R.id.nine: webSocket.send("2,2," + chance + "," +(chance+1)%2);
                     break;
-            }
-
-            int winner = MultiPlayer.winner(grid);
-
-            if(winner > 0) {
-                Toast.makeText(MultiPlayerWebSocket.this, "Winner is Player " + winner, Toast.LENGTH_SHORT).show();
-                Log.d("Winner", winner + "");
-
-                breakAllTouchs();
-            } else if( winner == -1){
-                Toast.makeText(MultiPlayerWebSocket.this, "Draw", Toast.LENGTH_SHORT).show();
-
             }
             in = 0;
         }
@@ -185,6 +203,12 @@ public class MultiPlayerWebSocket extends AppCompatActivity {
         seven.setOnClickListener(null);
         eight.setOnClickListener(null);
         nine.setOnClickListener(null);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        webSocket.close(1000, "Closing Connection for Player " + PlayerId  );
     }
 
     private void setViews() {
@@ -233,5 +257,8 @@ public class MultiPlayerWebSocket extends AppCompatActivity {
 
             dialog.show();
         });
+
+
+
     }
 }
