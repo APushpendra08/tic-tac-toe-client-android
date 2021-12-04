@@ -9,7 +9,7 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
-    Button singlePlayerBtn, multiPlayerBtn;
+    Button singlePlayerBtn, multiPlayerBtn, multiPlayerWeb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,6 +18,8 @@ public class MainActivity extends AppCompatActivity {
 
         singlePlayerBtn = findViewById(R.id.single_player_btn);
         multiPlayerBtn = findViewById(R.id.multi_player_btn);
+        multiPlayerWeb = findViewById(R.id.multi_player_over_web_btn);
+
 
         singlePlayerBtn.setOnClickListener( view -> {
             Toast.makeText(this, "Single Player It Is..", Toast.LENGTH_SHORT).show();
@@ -27,6 +29,11 @@ public class MainActivity extends AppCompatActivity {
         multiPlayerBtn.setOnClickListener(view -> {
             Toast.makeText(this, "Multi-Player It Is..", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, MultiPlayer.class));
+        });
+
+        multiPlayerWeb.setOnClickListener(view -> {
+//            Toast.makeText(this, "Multi-Player It Is..", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, MultiPlayerWebSocket.class));
         });
     }
 }

@@ -11,6 +11,8 @@ import android.widget.GridLayout;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import okhttp3.WebSocket;
+
 public class SinglePlayer extends AppCompatActivity {
 
     GridLayout gameBoard;

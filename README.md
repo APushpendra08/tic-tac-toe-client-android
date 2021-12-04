@@ -2,8 +2,14 @@
 
 ## TASK AT HAND
 
-☑ Simple Home UI
-☑ GameBoard UI
+- ☑ Simple Home UI
+- ☑ GameBoard UI
 - [ ] Single Player TTT
-☑ Dual Player TTT with Single Phone 
+	- [ ] Minimax Algo Understanding
+	- [ ] Minimax Implementation in Java
+	- [ ] Minimax for Single-Player
+- ☑ Dual Player TTT with Single Phone 
 - [ ] Dual Player TTT with websockets
+	- [ ] WebSocket understanding 
+	- [ ] WebSocket implementation
+	- [ ] Unit Testing

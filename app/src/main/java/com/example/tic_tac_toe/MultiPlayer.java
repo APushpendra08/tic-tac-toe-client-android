@@ -49,7 +49,7 @@ public class MultiPlayer extends AppCompatActivity {
                     break;
             }
 
-            int winner = winner();
+            int winner = winner(grid);
 
             if(winner > 0) {
                 Toast.makeText(MultiPlayer.this, "Winner is Player " + winner, Toast.LENGTH_SHORT).show();
@@ -147,7 +147,7 @@ public class MultiPlayer extends AppCompatActivity {
 
     }
 
-    public int winner(){
+    public static int winner(int[][] grid){
         for(int i=0; i <3; ++i)
             if(grid[i][0] == grid[i][1] && grid[i][1] == grid[i][2] && grid[i][2] != -1)
                 return grid[i][0] + 1;
