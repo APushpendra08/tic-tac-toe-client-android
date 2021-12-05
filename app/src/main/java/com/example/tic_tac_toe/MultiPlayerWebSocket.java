@@ -25,13 +25,15 @@ public class MultiPlayerWebSocket extends AppCompatActivity {
     ImageView one, two, three, four, five, six, seven, eight, nine;
     Button backBtn, drawBtn;
     int[][] grid;
-    int player, chance, in = 1;
+    int chance;
     OkHttpClient okHttpClient = null;
     WebSocket webSocket = null;
     private String SERVER_HOST = "ws://192.168.0.109";
     private String SERVER_PORT = "3000";
     private String GAME_ID;
     private int PlayerId = -1;
+    private int BothOnline = 0;
+    private int GameRunning = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,7 +68,11 @@ public class MultiPlayerWebSocket extends AppCompatActivity {
                 runOnUiThread(() -> {
                     Toast.makeText(MultiPlayerWebSocket.this, textParts[1], Toast.LENGTH_SHORT).show();
                 });
-            } else {
+            } else if(textParts[0].equals("BothReady")) {
+                GameRunning = 1;
+            }
+            else {
+                GameRunning = 1;
                 String x = textParts[0], y = textParts[1], whoMadeMove = textParts[2], whosNext = textParts[3];
 
                 runOnUiThread(() -> {
@@ -127,11 +133,11 @@ public class MultiPlayerWebSocket extends AppCompatActivity {
                     if(winner > 0) {
                         Toast.makeText(MultiPlayerWebSocket.this, "Winner is Player " + winner, Toast.LENGTH_SHORT).show();
                         Log.d("Winner", winner + "");
-
+                        GameRunning = 0;
                         breakAllTouchs();
                     } else if( winner == -1){
                         Toast.makeText(MultiPlayerWebSocket.this, "Draw", Toast.LENGTH_SHORT).show();
-
+                        GameRunning = 0;
                     }
                 });
             }
@@ -166,7 +172,7 @@ public class MultiPlayerWebSocket extends AppCompatActivity {
         @Override
         public void onClick(View view) {
 
-            if(chance != PlayerId)
+            if(chance != PlayerId || GameRunning == 0)
                 return;
 
             switch (view.getId()){
@@ -189,7 +195,6 @@ public class MultiPlayerWebSocket extends AppCompatActivity {
                 case R.id.nine: webSocket.send("2,2," + chance + "," +(chance+1)%2);
                     break;
             }
-            in = 0;
         }
     };
 
@@ -238,24 +243,29 @@ public class MultiPlayerWebSocket extends AppCompatActivity {
         drawBtn = findViewById(R.id.rematch_btn);
 
         backBtn.setOnClickListener(v -> {
-            AlertDialog dialog = new AlertDialog.Builder(this).create();
-            dialog.setTitle("Quit Match");
-            dialog.setMessage("Are you sure to quit the match?");
-            dialog.setButton(DialogInterface.BUTTON_POSITIVE, "YES", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    dialogInterface.dismiss();
-                    finish();
-                }
-            });
-            dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "NO", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    dialogInterface.dismiss();
-                }
-            });
+            if(GameRunning == 1) {
+                AlertDialog dialog = new AlertDialog.Builder(this).create();
+                dialog.setTitle("Quit Match");
+                dialog.setMessage("Are you sure to quit the match?");
+                dialog.setButton(DialogInterface.BUTTON_POSITIVE, "YES", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                        finish();
+                    }
+                });
+                dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "NO", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                });
 
-            dialog.show();
+                dialog.show();
+            } else {
+                finish();
+                webSocket.close(1000, "Going Back");
+            }
         });
 
 
