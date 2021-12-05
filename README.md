@@ -11,6 +11,6 @@
 - ☑ Dual Player TTT with Single Phone 
 - [ ] Dual Player TTT with websockets
 	- [ ] WebSocket understanding 
-	- [X] WebSocket basic implementation
-	- [ ] WebSocket proper implementation
+	- ☑ WebSocket basic implementation
+	- ☑ WebSocket proper implementation
 	- [ ] Unit Testing

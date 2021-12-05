@@ -1,6 +1,7 @@
 package com.example.tic_tac_toe;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -23,7 +24,7 @@ public class MultiPlayerWebSocket extends AppCompatActivity {
 
     GridLayout gameBoard;
     ImageView one, two, three, four, five, six, seven, eight, nine;
-    Button backBtn, drawBtn;
+    Button backBtn, rematchBtn;
     int[][] grid;
     int chance;
     OkHttpClient okHttpClient = null;
@@ -42,11 +43,47 @@ public class MultiPlayerWebSocket extends AppCompatActivity {
         setViews();
         chance = 0;
         initiateSocketConnection();
+        setButtons();
         grid = new int[][]{{-1,-1,-1},{-1,-1,-1},{-1,-1,-1}};
 
-        Button btn = findViewById(R.id.rematch_btn);
-        btn.setOnClickListener(v -> {
-            Toast.makeText(this, PlayerId + "" , Toast.LENGTH_SHORT).show();
+//        Button btn = findViewById(R.id.rematch_btn);
+//        btn.setOnClickListener(v -> {
+//            Toast.makeText(this, PlayerId + "" , Toast.LENGTH_SHORT).show();
+//        });
+    }
+
+    private void setButtons() {
+        backBtn = findViewById(R.id.back_btn);
+        rematchBtn = findViewById(R.id.rematch_btn);
+        rematchBtn.setText("Rematch");
+        rematchBtn.setOnClickListener(v ->{
+            webSocket.send("rematch");
+        });
+
+        backBtn.setOnClickListener(v -> {
+            if(GameRunning == 1) {
+                AlertDialog dialog = new AlertDialog.Builder(this).create();
+                dialog.setTitle("Quit Match");
+                dialog.setMessage("Are you sure to quit the match?");
+                dialog.setButton(DialogInterface.BUTTON_POSITIVE, "YES", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                        finish();
+                    }
+                });
+                dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "NO", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+                    }
+                });
+
+                dialog.show();
+            } else {
+                finish();
+                webSocket.close(1000, "Going Back");
+            }
         });
     }
 
@@ -70,8 +107,15 @@ public class MultiPlayerWebSocket extends AppCompatActivity {
                 });
             } else if(textParts[0].equals("BothReady")) {
                 GameRunning = 1;
-            }
-            else {
+            } else if(textParts[0].equals("rematch")){
+                Log.d("Rematch", "Rematch");
+                runOnUiThread(()->{
+                    setViews();
+                    grid = new int[][]{{-1,-1,-1},{-1,-1,-1},{-1,-1,-1}};
+                    GameRunning = 1;
+                });
+            } else {
+                Log.d("Rematch", "Rematch");
                 GameRunning = 1;
                 String x = textParts[0], y = textParts[1], whoMadeMove = textParts[2], whosNext = textParts[3];
 
@@ -143,6 +187,8 @@ public class MultiPlayerWebSocket extends AppCompatActivity {
             }
         }
 
+
+
         @Override
         public void onOpen(@NonNull WebSocket webSocket, @NonNull Response response) {
 //            super.onOpen(webSocket, response);
@@ -151,6 +197,12 @@ public class MultiPlayerWebSocket extends AppCompatActivity {
                 Toast.makeText(MultiPlayerWebSocket.this, "Socket Connected", Toast.LENGTH_SHORT).show();
 //                setViews();
             });
+        }
+
+        @Override
+        public void onFailure(@NonNull WebSocket webSocket, @NonNull Throwable t, @Nullable Response response) {
+            super.onFailure(webSocket, t, response);
+            Log.d("ABC", response + "t" + t);
         }
     }
 
@@ -238,37 +290,15 @@ public class MultiPlayerWebSocket extends AppCompatActivity {
         seven.setOnClickListener(listener);
         eight.setOnClickListener(listener);
         nine.setOnClickListener(listener);
-
-        backBtn = findViewById(R.id.back_btn);
-        drawBtn = findViewById(R.id.rematch_btn);
-
-        backBtn.setOnClickListener(v -> {
-            if(GameRunning == 1) {
-                AlertDialog dialog = new AlertDialog.Builder(this).create();
-                dialog.setTitle("Quit Match");
-                dialog.setMessage("Are you sure to quit the match?");
-                dialog.setButton(DialogInterface.BUTTON_POSITIVE, "YES", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.dismiss();
-                        finish();
-                    }
-                });
-                dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "NO", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.dismiss();
-                    }
-                });
-
-                dialog.show();
-            } else {
-                finish();
-                webSocket.close(1000, "Going Back");
-            }
-        });
-
-
+        one.setImageResource(R.color.bg_gray);
+        two.setImageResource(R.color.bg_gray);
+        three.setImageResource(R.color.bg_gray);
+        four.setImageResource(R.color.bg_gray);
+        five.setImageResource(R.color.bg_gray);
+        six.setImageResource(R.color.bg_gray);
+        seven.setImageResource(R.color.bg_gray);
+        eight.setImageResource(R.color.bg_gray);
+        nine.setImageResource(R.color.bg_gray);
 
     }
 }
